@@ -1,0 +1,61 @@
+=======================================
+Yi-Chao Chen @ UT Austin
+=======================================
+
+## ===========================
+## Data Placement
+## ===========================
+- iParking
+  |- data
+  |   |- sensor: [Input] Data_*.txt and label_*.txt
+  |   |          [Output] Preprocessed data
+  |   |
+  |   |- model: [Output] learned models
+  |   |- ml_weka: [Output] prediction and results
+  |   |   |- err: [Output] Plot FN/FP cases
+  |   |   |- prob: [Output] Confidence of True/False/FP/FN cases
+  |   |   |- summary: [Output] Summarized results (to plot figures in paper)
+  |   |
+  |   |- feature_dist: [Output] feature distribution across months
+  |   |- condor: [Output] cluster results
+  |
+  |- git_repository: download from git repository
+
+
+## ===========================
+## Preprocessing
+## ===========================
+
+Step 0. Depends on the OS, you might need to manaully delete last line (some weird character) in label_*.txt
+
+Step 1. batch_format_convert_libsvm_mat.sh
+  Convert libsvm format data to csv format (with both original and normalized feature data)
+
+Step 2. feature_dist.m
+  Plot the distribution of each feature across months. It's used to manually get rid of  features which change a lot over months.
+
+Step 3. fix_labeling.m
+  There might still offset between the ground-truth and labels. The code tries to fix them by checking the peaks of feature 7 and labels.
+
+Step 4. batch_format_convert_mat_arff.sh
+  Convert csv format to ARFF (for Weka) format.
+
+Step 5. weka_filter_resample.sh
+  Performs the following tasks:
+  a) Remove or keep bad features found in "Step 2"
+  b) Attach data from different months
+  c) Balance positive and negative samples by calling weka's resampling function
+
+
+## ===========================
+## Classification -- Weka
+## ===========================
+
+Step 1. batch_eval_condor.sh
+  Run classifiers with various feature selectors/parameters on UT Austin CONDOR
+
+Step 2 (a). summarize_results.py
+  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1" results
+
+Step 2 (b). visualize_err.py
+  Plot FP/FN cases from "Step 1" results
