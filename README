@@ -26,21 +26,22 @@ Yi-Chao Chen @ UT Austin
 ## Preprocessing
 ## ===========================
 
-Step 0. Depends on the OS, you might need to manaully delete last line (some weird character) in label_*.txt
+Step 1. setup_files.sh
+  Cleanup old files, setup proper directory, and copy data/labels to iParking/data/sensor/
 
-Step 1. batch_format_convert_libsvm_mat.sh
+Step 2. batch_format_convert_libsvm_mat.sh
   Convert libsvm format data to csv format (with both original and normalized feature data)
 
-Step 2. feature_dist.m
+Step 3. feature_dist.m
   Plot the distribution of each feature across months. It's used to manually get rid of  features which change a lot over months.
 
-Step 3. fix_labeling.m
+Step 4. fix_labeling.m
   There might still offset between the ground-truth and labels. The code tries to fix them by checking the peaks of feature 7 and labels.
 
-Step 4. batch_format_convert_mat_arff.sh
+Step 5. batch_format_convert_mat_arff.sh
   Convert csv format to ARFF (for Weka) format.
 
-Step 5. weka_filter_resample.sh
+Step 6. weka_filter_resample.sh
   Performs the following tasks:
   a) Remove or keep bad features found in "Step 2"
   b) Attach data from different months

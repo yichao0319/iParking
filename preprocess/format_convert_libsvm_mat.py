@@ -27,7 +27,7 @@ print "> MONTH=%d" % (mon)
 ## =======================
 print "  Parse Features"
 
-file_prefix = "Data_%d" % (mon)
+file_prefix = "data_%d" % (mon)
 
 features = []
 

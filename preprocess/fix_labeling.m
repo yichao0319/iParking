@@ -33,7 +33,7 @@ function fix_labeling
     fix_rng  = 7;
     fix_base = 7;  %% feature idx used for fixing
 
-    mons = [4:7, 201605];
+    mons = [201504:201507, 201605];
     % mons = [4];
 
     %% --------------------
@@ -54,7 +54,7 @@ function fix_labeling
         %% --------------------
         if DEBUG2, fprintf('read feature file\n'); end
 
-        features{mon} = load(sprintf('%sData_%d.mat.txt', input_dir, mon));
+        features{mon} = load(sprintf('%sdata_%d.mat.txt', input_dir, mon));
         % features = abs(features);
         nf = size(features{mon}, 2);
         nd{mon} = size(features{mon}, 1);
@@ -159,7 +159,7 @@ function fix_labeling
         end
 
         dlmwrite(sprintf('%slabel_%d.fix.txt', output_dir, mon), labels_fixed, 'delimiter', '\t');
-        dlmwrite(sprintf('%sData_%d.norm.mat.txt', output_dir, mon), features_norm, 'delimiter', ',');
+        dlmwrite(sprintf('%sdata_%d.norm.mat.txt', output_dir, mon), features_norm, 'delimiter', ',');
     end
 
 end
