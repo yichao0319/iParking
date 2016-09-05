@@ -2,19 +2,32 @@
 
 DATA_PATH="../../data/sensor"
 
-# FILE1=(4  45  456  4567 )
-# FILE2=(5  6   7    8    )
-# FILE3=(45 456 4567 45678)
-FILES=(4  5   6   7  201605)
-FILE1=(4  45  456)
-FILE2=(5  6   7)
-FILE3=(45 456 4567)
+## Original Files
+FILES=(201504 201505    201506     201507  201604  201605)
+## Attach 1
+FILE1=(201504 545    5456   54567   5456764)
+## Attach 2
+FILE2=(201505 201506 201507 201604  201605)
+## Attach result
+FILE3=(545    5456   54567  5456764 54567645)
+DUPS=(100 200)
+SENSORS=("" "lora_" "light_")
+# FILES=(201604  201605)
+# FILE1=()
+# FILE2=()
+# FILE3=()
+# DUPS=(200)
+# SENSORS=("" "lora_" "light_")
+
 N1=${#FILES[@]}
 N2=${#FILE1[@]}
-DUPS=(100 150 200)
 ND=${#DUPS[@]}
+NS=${#SENSORS[@]}
 
+
+########################################
 ## Remove Attributes
+########################################
 echo "Remove Attributes"
 
 for (( i = 0; i < ${N1}; i++ )); do
@@ -32,8 +45,10 @@ for (( i = 0; i < ${N1}; i++ )); do
 done
 
 
-## Append
-echo "Append"
+########################################
+## Append Magnet Data
+########################################
+echo "Append Magnet Data"
 
 for (( i = 0; i < ${N2}; i++ )); do
     echo "  " ${FILE1[${i}]}, ${FILE2[${i}]}, ${FILE3[${i}]}
@@ -60,33 +75,61 @@ for (( i = 0; i < ${N2}; i++ )); do
 done
 
 
-## unbias
+########################################
+## Balance
+########################################
 echo "Balance"
 
 for (( i = 0; i < ${N1}; i++ )); do
     for (( j = 0; j < ${ND}; j++ )); do
-        echo "  Month " ${FILES[${i}]} ", dup =" ${DUPS[${j}]}
+        for (( k = 0; k < ${NS}; k++ )); do
+            echo "  Sensor " ${SENSORS[${k}]} ", Month " ${FILES[${i}]} ", dup =" ${DUPS[${j}]}
 
-        java weka.filters.supervised.instance.Resample \
-            -i ${DATA_PATH}/weka_${FILES[${i}]}.fix.arff \
-            -o ${DATA_PATH}/weka_${FILES[${i}]}.fix.bal${DUPS[${j}]}.arff \
-            -c last -Z ${DUPS[${j}]} -B 1
+            ## fixed
+            FILE_PREFIX="${DATA_PATH}/weka_${SENSORS[${k}]}${FILES[${i}]}.fix"
+            if [[ -e ${FILE_PREFIX}.arff ]]; then
+                java weka.filters.supervised.instance.Resample \
+                    -i ${FILE_PREFIX}.arff \
+                    -o ${FILE_PREFIX}.bal${DUPS[${j}]}.arff \
+                    -c last -Z ${DUPS[${j}]} -B 1
+            fi
 
-        java weka.filters.supervised.instance.Resample \
-            -i ${DATA_PATH}/weka_${FILES[${i}]}.norm.fix.arff \
-            -o ${DATA_PATH}/weka_${FILES[${i}]}.norm.fix.bal${DUPS[${j}]}.arff \
-            -c last -Z ${DUPS[${j}]} -B 1
+            ## normalized fixed
+            FILE_PREFIX="${DATA_PATH}/weka_${SENSORS[${k}]}${FILES[${i}]}.norm.fix"
+            if [[ -e ${FILE_PREFIX}.arff ]]; then
+                java weka.filters.supervised.instance.Resample \
+                    -i ${FILE_PREFIX}.arff \
+                    -o ${FILE_PREFIX}.bal${DUPS[${j}]}.arff \
+                    -c last -Z ${DUPS[${j}]} -B 1
+            fi
 
-        java weka.filters.supervised.instance.Resample \
-            -i ${DATA_PATH}/weka_${FILES[${i}]}.fix.fltr.arff \
-            -o ${DATA_PATH}/weka_${FILES[${i}]}.fix.fltr.bal${DUPS[${j}]}.arff \
-            -c last -Z ${DUPS[${j}]} -B 1
+            ## fixed filtered
+            FILE_PREFIX="${DATA_PATH}/weka_${SENSORS[${k}]}${FILES[${i}]}.fix.fltr"
+            if [[ -e ${FILE_PREFIX}.arff ]]; then
+                java weka.filters.supervised.instance.Resample \
+                    -i ${FILE_PREFIX}.arff \
+                    -o ${FILE_PREFIX}.bal${DUPS[${j}]}.arff \
+                    -c last -Z ${DUPS[${j}]} -B 1
+            fi
 
-        java weka.filters.supervised.instance.Resample \
-            -i ${DATA_PATH}/weka_${FILES[${i}]}.norm.fix.fltr.arff \
-            -o ${DATA_PATH}/weka_${FILES[${i}]}.norm.fix.fltr.bal${DUPS[${j}]}.arff \
-            -c last -Z ${DUPS[${j}]} -B 1
+            ## normalized fixed filtered
+            FILE_PREFIX="${DATA_PATH}/weka_${SENSORS[${k}]}${FILES[${i}]}.norm.fix.fltr"
+            if [[ -e ${FILE_PREFIX}.arff ]]; then
+                java weka.filters.supervised.instance.Resample \
+                    -i ${FILE_PREFIX}.arff \
+                    -o ${FILE_PREFIX}.bal${DUPS[${j}]}.arff \
+                    -c last -Z ${DUPS[${j}]} -B 1
+            fi
 
+            ## normalized fixed valid
+            FILE_PREFIX="${DATA_PATH}/weka_${SENSORS[${k}]}${FILES[${i}]}.norm.fix.valid"
+            if [[ -e ${FILE_PREFIX}.arff ]]; then
+                java weka.filters.supervised.instance.Resample \
+                    -i ${FILE_PREFIX}.arff \
+                    -o ${FILE_PREFIX}.bal${DUPS[${j}]}.arff \
+                    -c last -Z ${DUPS[${j}]} -B 1
+            fi
+        done
     done
 done
 

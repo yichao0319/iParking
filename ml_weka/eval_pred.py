@@ -5,11 +5,18 @@
 ## Yi-Chao Chen @ UT Austin
 ##
 ## - Input
-##
+##    1. classifier
+##    2. sensor
+##    3. training month
+##    4. training type
+##    5. balance
+##    6. testing month
+##    7. testing type
+##    8. tolerant range: allowed time difference between real and estimated event
 ## - Output
 ##
 ## - Example
-##   python eval_pred.py weka_4.norm.fix.bal200.weka_4.norm.fix 100
+##   python eval_pred.py "C45" "" 201604 norm.fix 200 201604 norm.fix 100
 ##
 ######################################
 
@@ -31,6 +38,11 @@ DEBUG2 = 0
 DEBUG3 = 1
 DEBUG4 = 1
 
+TP = 1
+TN = 2
+FP = 3
+FN = 4
+
 
 ## =====================
 ## Constant
@@ -48,12 +60,18 @@ fig_dir = "../../data/ml_weka/prob/"
 ## =====================
 ## Check Input Parameters
 ## =====================
-if len(sys.argv) <= 2:
+if len(sys.argv) <= 8:
   print "FORMAT: filename range"
   exit()
 
-filename = sys.argv[1]
-rng      = int(sys.argv[2])
+classifier = sys.argv[1]
+sensor     = sys.argv[2]
+mon1       = sys.argv[3]
+prefix     = sys.argv[4]
+dup        = int(sys.argv[5])
+mon2       = sys.argv[6]
+suffix     = sys.argv[7]
+rng        = int(sys.argv[8])
 
 
 ## =====================
@@ -162,10 +180,95 @@ def pdf(data):
   return [x, y]
 
 
+## =====================
+## FUNC: get_valid_idx(filename)
+## =====================
+def get_valid_idx(filename):
+  valid_idx = set()
+
+  f = open(filename, 'r')
+  for line in f:
+    line = line.strip()
+    valid_idx.add(int(line))
+
+  return valid_idx
+
+
+
+## =====================
+## FUNC: check_correctness
+## =====================
+def check_correctness(labels, preds, i, rng):
+  nd = len(labels)
+  std_idx = max(0, i-rng)
+  end_idx = min(nd, i+rng+1)
+
+  ## True Positive, False Negative
+  if labels[i] == 1:
+    found = 0
+    for j in xrange(std_idx, end_idx):
+      if preds[j] == 1:
+        found = 1
+        break
+
+    if found == 1:
+      ## true positive
+      return TP
+
+    else:
+      ## false negative
+      ##   Avoid continuous false negative
+      found = 0
+      for j in xrange(std_idx, i):
+        if labels[j] == 1:
+          found = 1
+          break
+      if found == 0:
+        return FN
+      else:
+        return TN
+
+  ## False Positive
+  if preds[i] == 1:
+    found = 0
+    j = 0
+    for j in xrange(std_idx, end_idx):
+      if labels[j] == 1:
+        found = 1
+        break
+
+    if found == 0:
+      return FP
+    else:
+      ## True Positive, should be captured above
+      return TN
+
+  ## True Negative
+  return TN
+
 
 ## =====================
 ## Main
 ## =====================
+
+## =====================
+## Filenames
+## =====================
+if DEBUG2: print "Filenames"
+
+
+bal = ""
+if dup > 0:
+  bal = ".bal%d" % (dup)
+
+valid = ""
+if sensor != "":
+  valid = ".valid"
+
+  valid_idx_name = "%svalid_idx_%s%s.txt" % (input_data_dir, sensor, mon2)
+  valid_idx = get_valid_idx(valid_idx_name)
+
+filename = "%s.weka_%s%s.%s%s%s.weka_%s%s.%s" % (classifier, sensor, mon1, prefix, valid, bal, sensor, mon2, suffix)
 
 
 ## =====================
@@ -186,7 +289,7 @@ if DEBUG2: print "  FILE: %s%s.pred.csv" % (input_pred_dir, filename)
 ret = get_prediction("%s%s.pred.csv" % (input_pred_dir, filename))
 labels = ret[0]
 preds  = ret[1]
-prob   = ret[2]
+probs  = ret[2]
 
 
 ## =====================
@@ -198,6 +301,7 @@ tp = 0
 tn = 0
 fp = 0
 fn = 0
+iv = 0
 
 prob_truth = []
 prob_false = []
@@ -214,75 +318,41 @@ prob_fn_cnt    = 0
 
 nd = len(labels)
 for i in xrange(0, nd):
-  std_idx = max(0, i-rng)
-  end_idx = min(nd, i+rng+1)
-
-  ## True/False Positive
-  if preds[i] == 1:
-    found = 0
-    for j in xrange(std_idx, end_idx):
-      if labels[j] == 1:
-        found = 1
-        break
-
-    if found == 1:
-      ## true positive
-      tp += 1
-      prob_truth.append(prob[i])
-      prob_truth_cnt += 1
-      prob_truth_sum += prob[i]
-
-    else:
-      ## false positive
-      ##   Avoid continuous false positive
-      found = 0
-      for j in xrange(std_idx, i):
-        if preds[j] == 1:
-          found = 1
-          break
-      if found == 0:
-        fp += 1
-      else:
-        tn += 1
-
-      prob_false.append(prob[i])
-      prob_false_cnt += 1
-      prob_false_sum += prob[i]
-
-      prob_fp.append(prob[i])
-      prob_fp_cnt += 1
-      prob_fp_sum += prob[i]
-
+  if sensor != "" and (i+1) not in valid_idx:
+    iv += 1
     continue
 
+  state = check_correctness(labels, preds, i, rng)
 
-  ## False Negative
-  if labels[i] == 1:
-    found = 0
-    for j in xrange(std_idx, end_idx+1):
-      if preds[j] == 1:
-        found = 1
-        break
-
-    if found == 0:
-      fn += 1
-      prob_false.append(prob[i])
-      prob_false_cnt += 1
-      prob_false_sum += prob[i]
-
-      prob_fn.append(prob[i])
-      prob_fn_cnt += 1
-      prob_fn_sum += prob[i]
-
-    continue
-
-  ## Truth Negative
-  tn += 1
-  if (preds[i] == -1 and labels[i] == -1):
-    prob_truth.append(prob[i])
+  if state == TP:
+    tp += 1
+    prob_truth.append(probs[i])
     prob_truth_cnt += 1
-    prob_truth_sum += prob[i]
-    continue
+    prob_truth_sum += probs[i]
+  elif state == FP:
+    fp += 1
+    prob_false.append(probs[i])
+    prob_false_cnt += 1
+    prob_false_sum += probs[i]
+
+    prob_fp.append(probs[i])
+    prob_fp_cnt += 1
+    prob_fp_sum += probs[i]
+  elif state == TN:
+    tn += 1
+    prob_truth.append(probs[i])
+    prob_truth_cnt += 1
+    prob_truth_sum += probs[i]
+  elif state == FN:
+    fn += 1
+    prob_false.append(probs[i])
+    prob_false_cnt += 1
+    prob_false_sum += probs[i]
+
+    prob_fn.append(probs[i])
+    prob_fn_cnt += 1
+    prob_fn_sum += probs[i]
+
 
 precision = 0
 if (tp+fp) > 0:
@@ -301,7 +371,7 @@ if prob_false_cnt > 0: prob_false_sum /= prob_false_cnt
 if prob_fp_cnt > 0: prob_fp_sum /= prob_fp_cnt
 if prob_fn_cnt > 0: prob_fn_sum /= prob_fn_cnt
 
-print "tp=%d,tn=%d,fp=%d,fn=%d" % (tp, tn, fp, fn)
+print "tp=%d,tn=%d,fp=%d,fn=%d,iv=%d" % (tp, tn, fp, fn, iv)
 print "precision=%.2f, recall=%.2f, f1=%.2f" % (precision, recall, f1)
 print "prob: truth=%.2f, false=%.2f (fp=%.2f, fn=%.2f)" % (prob_truth_sum, prob_false_sum, prob_fp_sum, prob_fn_sum)
 
@@ -311,7 +381,7 @@ print "prob: truth=%.2f, false=%.2f (fp=%.2f, fn=%.2f)" % (prob_truth_sum, prob_
 ## =====================
 if DEBUG2: print "Confidence Distribution"
 
-ret = pdf(prob)
+ret = pdf(probs)
 x_all = ret[0]
 y_all = ret[1]
 
@@ -332,8 +402,18 @@ x_fn = ret[0]
 y_fn = ret[1]
 
 
-plt.plot(x_all, y_all, '-b.', x_truth, y_truth, '-r.', x_false, y_false, '-y.', x_fp, y_fp, '-g.', x_fn, y_fn, '-c.')
-plt.xlim((0.9,1))
+# plt.plot(x_all, y_all, '-b.', x_truth, y_truth, '-r.', x_false, y_false, '-y.', x_fp, y_fp, '-g.', x_fn, y_fn, '-c.')
+lh, = plt.plot(x_all, y_all, '-b.')
+plt.setp(lh, linewidth=5.0, marker='o', ls='-')
+lh, = plt.plot(x_truth, y_truth, '-r.')
+plt.setp(lh, linewidth=4.0, marker='+', ls='--')
+lh, = plt.plot(x_false, y_false, '-y.')
+plt.setp(lh, linewidth=3.0, marker='x', ls='-.')
+lh, = plt.plot(x_fp, y_fp, '-g.')
+plt.setp(lh, linewidth=2.0, marker='.', ls='..')
+lh, = plt.plot(x_fn, y_fn, '-c.')
+plt.setp(lh, linewidth=1.0, marker=',', ls='-')
+plt.xlim((0.8,1))
 plt.xlabel("Confidence")
 plt.ylim((0,1))
 plt.ylabel("PDF")
@@ -349,7 +429,7 @@ plt.savefig("%s%s.prob_pdf.eps" % (fig_dir, filename), format='eps', dpi=1000)
 if DEBUG2: print "Output Results"
 
 f = open("%s%s.result.txt" % (output_dir, filename), 'w')
-f.write("%d,%d,%d,%d,%f,%f,%f,%f,%f,%f,%f" % (tp, tn, fp, fn, precision, recall, f1, prob_truth_sum, prob_false_sum, prob_fp_sum, prob_fn_sum))
+f.write("%d,%d,%d,%d,%d,%f,%f,%f,%f,%f,%f,%f" % (tp, tn, fp, fn, iv, precision, recall, f1, prob_truth_sum, prob_false_sum, prob_fp_sum, prob_fn_sum))
 f.close()
 
 

@@ -32,14 +32,16 @@ Step 1. setup_files.sh
 Step 2. batch_format_convert_libsvm_mat.sh
   Convert libsvm format data to csv format (with both original and normalized feature data)
 
-Step 3. feature_dist.m
-  Plot the distribution of each feature across months. It's used to manually get rid of  features which change a lot over months.
+Step 3. fix_labeling.m
+  a) merge nearby positive events (because they may belong to one but spam longer samples)
+  b) normalize features
+  c) remove invalid samples in Lora and Light sensors
 
-Step 4. fix_labeling.m
-  There might still offset between the ground-truth and labels. The code tries to fix them by checking the peaks of feature 7 and labels.
-
-Step 5. batch_format_convert_mat_arff.sh
+Step 4. batch_format_convert_mat_arff.sh
   Convert csv format to ARFF (for Weka) format.
+
+Step 5 [OPTIONAL]. feature_dist.m
+  Plot the distribution of each feature across months. It's used to manually get rid of  features which change a lot over months.
 
 Step 6. weka_filter_resample.sh
   Performs the following tasks:
@@ -52,11 +54,20 @@ Step 6. weka_filter_resample.sh
 ## Classification -- Weka
 ## ===========================
 
-Step 1. batch_eval_condor.sh
+Step 1 (a) batch_eval_condor.sh
   Run classifiers with various feature selectors/parameters on UT Austin CONDOR
 
-Step 2 (a). summarize_results.py
-  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1" results
+Step 1 (b) batch_eval_sensors_condor.sh
+  Run classifiers with various feature selectors/parameters on UT Austin CONDOR for Lora and Light data
 
-Step 2 (b). visualize_err.py
-  Plot FP/FN cases from "Step 1" results
+Step 2 (a). summarize_results.py
+  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1 (a)" results
+
+Step 2 (b). summarize_sensors_results.py
+  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1 (b)" results
+
+#Step 3. visualize_err.py
+#  Plot FP/FN cases from "Step 1" results
+
+
+

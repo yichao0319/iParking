@@ -9,7 +9,7 @@
 ## - Output
 ##
 ## - Example
-##   python format_convert_mat_arff.py data_4 label_4.fixed weka_4.fixed
+##   python format_convert_mat_arff.py data_201504 label_201504.fixed weka_201504.fixed
 ##
 ######################################
 

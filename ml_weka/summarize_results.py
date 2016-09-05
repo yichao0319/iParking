@@ -4,10 +4,6 @@
 ##
 ## Yi-Chao Chen @ UT Austin
 ##
-## - Input
-##
-## - Output
-##
 ## - Example
 ##   python summarize_results.py
 ##
@@ -35,28 +31,36 @@ input_dir  = "../../data/ml_weka/"
 output_dir = "../../data/ml_weka/summary/"
 # fig_dir    = "../../data/ml_weka/summary/"
 
+TYPE = "norm.fix"
+MON  = 54567645
 
 ## =====================
 ## Variables
 ## =====================
 # classifier = "NaiveBayes"
-classifier = "C45"
+# classifier = "C45"
 # classifier = "SVM"
+classifier = "LIBSVM"
 
 ## =====================
 ## FUNC: get_results
 ## =====================
 def get_results(filename):
-  f = open(filename, 'r')
 
-  for line in f:
-    line = line.strip()
-    cols = line.split(',')
+  if os.path.isfile(filename):
+    f = open(filename, 'r')
 
-    for i in xrange(0,len(cols)):
-      cols[i] = float(cols[i])
+    for line in f:
+      line = line.strip()
+      cols = line.split(',')
 
-  f.close()
+      for i in xrange(0,len(cols)):
+        cols[i] = float(cols[i])
+
+    f.close()
+  else:
+    print "[MISS] %s" % (filename)
+    cols = [0] * 12
 
   return cols
 
@@ -81,7 +85,8 @@ def get_results(filename):
 print "========================================="
 print "> normalized, non-normalization, imbalanced"
 
-file_prefix = "weka_4567"
+# file_prefix = "weka_4567"
+file_prefix = "weka_%d" % (MON)
 
 ret = []
 
@@ -129,9 +134,9 @@ ret.append(tmp)
 filename = "%s%s.norm_bal_fltr.txt" % (output_dir, classifier)
 f = open(filename, 'w')
 f.write("##orig\tnorm\tbal\tfltr\tnorm-bal\tnorm-fltr\tbal-fltr\tnorm-bal-fltr\n")
-f.write("\"Precision\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][4],ret[1][4],ret[2][4],ret[3][4],ret[4][4],ret[5][4],ret[6][4],ret[7][4]))
-f.write("\"Recall\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][5],ret[1][5],ret[2][5],ret[3][5],ret[4][5],ret[5][5],ret[6][5],ret[7][5]))
-f.write("\"F1\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][6],ret[1][6],ret[2][6],ret[3][6],ret[4][6],ret[5][6],ret[6][6],ret[7][6]))
+f.write("\"Precision\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][5],ret[1][5],ret[2][5],ret[3][5],ret[4][5],ret[5][5],ret[6][5],ret[7][5]))
+f.write("\"Recall\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][6],ret[1][6],ret[2][6],ret[3][6],ret[4][6],ret[5][6],ret[6][6],ret[7][6]))
+f.write("\"F1\"\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n" % (ret[0][7],ret[1][7],ret[2][7],ret[3][7],ret[4][7],ret[5][7],ret[6][7],ret[7][7]))
 f.close()
 # exit()
 
@@ -142,7 +147,9 @@ f.close()
 print "========================================="
 print "> Data Size"
 
-months = [4,45,456,4567]
+# months = [4,45,456,4567]
+# months = [201504, 20150405,2015040506,201504050607]
+months = [201504, 545, 5456, 54567, 5456764, 54567645]
 
 # filename = "%s%s.dataset_size.txt" % (output_dir, classifier)
 # f = open(filename, 'w')
@@ -153,7 +160,7 @@ data = [[0 for x in range(w)] for y in range(h)]
 
 size = 0
 for mon in months:
-  file_prefix = "weka_%d.norm.fix.fltr" % (mon)
+  file_prefix = "weka_%d.%s" % (mon, TYPE)
   size += 1
 
   ## All
@@ -161,11 +168,11 @@ for mon in months:
   ret = get_results("%s%s.%s.bal200.%s.result.txt" % (input_dir, classifier, file_prefix, file_prefix))
   print ret
 
-  data[0][size-1] = ret[4]
-  data[1][size-1] = ret[5]
-  data[2][size-1] = ret[6]
+  data[0][size-1] = ret[5]
+  data[1][size-1] = ret[6]
+  data[2][size-1] = ret[7]
 
-  # f.write("%d\t%f\t%f\t%f\n" % (size, ret[4], ret[5], ret[6]))
+  # f.write("%d\t%f\t%f\t%f\n" % (size, ret[5], ret[6]], ret[7]))
 
 # f.close()
 
@@ -192,7 +199,8 @@ f.close()
 print "========================================="
 print "> Number of Duplication"
 
-dups = [0, 100, 150, 200]
+# dups = [0, 100, 150, 200]
+dups = [0, 100, 200]
 
 # filename = "%s%s.dataset_size.txt" % (output_dir, classifier)
 # f = open(filename, 'w')
@@ -203,7 +211,8 @@ data = [[0 for x in range(w)] for y in range(h)]
 
 size = 0
 for dup in dups:
-  file_prefix = "weka_4567.norm.fix.fltr"
+  # file_prefix = "weka_4567.norm.fix.fltr"
+  file_prefix = "weka_%d.%s" % (MON, TYPE)
   size += 1
 
   ## All
@@ -216,11 +225,11 @@ for dup in dups:
   ret = get_results(filename)
   print ret
 
-  data[0][size-1] = ret[4]
-  data[1][size-1] = ret[5]
-  data[2][size-1] = ret[6]
+  data[0][size-1] = ret[5]
+  data[1][size-1] = ret[6]
+  data[2][size-1] = ret[7]
 
-  # f.write("%d\t%f\t%f\t%f\n" % (size, ret[4], ret[5], ret[6]))
+  # f.write("%d\t%f\t%f\t%f\n" % (size, ret[5], ret[6], ret[7]))
 
 # f.close()
 
@@ -247,7 +256,8 @@ f.close()
 print "========================================="
 print "> Feature Selection"
 
-months = [4,5,6,7,45,456,4567]
+# months = [4,5,6,7,45,456,4567]
+months = [201504,201505,201506,201507,201604,201605,545,5456,54567,5456764,54567645]
 nfs = [10,30,50]
 
 h, w = len(nfs)+3, len(months)
@@ -262,18 +272,18 @@ for mon in months:
   # f = open(filename, 'w')
   # f.write("##FS_type\tPrecision\tRecall\tF1-score\n")
 
-  file_prefix = "weka_%d.norm.fix.fltr" % (mon)
+  file_prefix = "weka_%d.%s" % (mon, TYPE)
   hi = 0
 
   ## All
   print "mon=%d: All" % (mon)
   ret1 = get_results("%s%s.%s.bal200.%s.result.txt" % (input_dir, classifier, file_prefix, file_prefix))
   print ret1
-  # f.write("\"All\"\t%f\t%f\t%f\n" % (ret1[4], ret1[5], ret1[6]))
+  # f.write("\"All\"\t%f\t%f\t%f\n" % (ret1[5], ret1[6], ret1[7]))
   data_type.append("All")
-  data_pre[hi][mi] = ret1[4]
-  data_rec[hi][mi] = ret1[5]
-  data_f1[hi][mi]  = ret1[6]
+  data_pre[hi][mi] = ret1[5]
+  data_rec[hi][mi] = ret1[6]
+  data_f1[hi][mi]  = ret1[7]
   hi += 1
 
   ## FCBF
@@ -285,11 +295,11 @@ for mon in months:
   fs_suffix = "%s_%s_N%d_D%d" % (search, eva, nf, direct)
   ret2 = get_results("%s%s.%s.bal200.%s.%s.result.txt" % (input_dir, classifier, file_prefix, file_prefix, fs_suffix))
   print ret2
-  # f.write("\"FCBF\"\t%f\t%f\t%f\n" % (ret2[4], ret2[5], ret2[6]))
+  # f.write("\"FCBF\"\t%f\t%f\t%f\n" % (ret2[5], ret2[6], ret2[7]))
   data_type.append("FCBF")
-  data_pre[hi][mi] = ret2[4]
-  data_rec[hi][mi] = ret2[5]
-  data_f1[hi][mi]  = ret2[6]
+  data_pre[hi][mi] = ret2[5]
+  data_rec[hi][mi] = ret2[6]
+  data_f1[hi][mi]  = ret2[7]
   hi += 1
 
   ## BestFirst
@@ -301,11 +311,11 @@ for mon in months:
   fs_suffix = "%s_%s_N%d_D%d" % (search, eva, nf, direct)
   ret3 = get_results("%s%s.%s.bal200.%s.%s.result.txt" % (input_dir, classifier, file_prefix, file_prefix, fs_suffix))
   print ret3
-  # f.write("\"CFS:N=%d\"\t%f\t%f\t%f\n" % (nf, ret3[4], ret3[5], ret3[6]))
+  # f.write("\"CFS:N=%d\"\t%f\t%f\t%f\n" % (nf, ret3[5], ret3[6], ret3[7]))
   data_type.append("CFS:N=%d" % (nf))
-  data_pre[hi][mi] = ret3[4]
-  data_rec[hi][mi] = ret3[5]
-  data_f1[hi][mi]  = ret3[6]
+  data_pre[hi][mi] = ret3[5]
+  data_rec[hi][mi] = ret3[6]
+  data_f1[hi][mi]  = ret3[7]
   hi += 1
 
   ## Ranker
@@ -317,11 +327,11 @@ for mon in months:
     fs_suffix = "%s_%s_N%d_D%d" % (search, eva, nf, direct)
     ret4 = get_results("%s%s.%s.bal200.%s.%s.result.txt" % (input_dir, classifier, file_prefix, file_prefix, fs_suffix))
     print ret4
-    # f.write("\"Gain:N=%d\"\t%f\t%f\t%f\n" % (nf, ret4[4], ret4[5], ret4[6]))
+    # f.write("\"Gain:N=%d\"\t%f\t%f\t%f\n" % (nf, ret4[5], ret4[6], ret4[7]))
     data_type.append("Gain,N=%d" % (nf))
-    data_pre[hi][mi] = ret4[4]
-    data_rec[hi][mi] = ret4[5]
-    data_f1[hi][mi]  = ret4[6]
+    data_pre[hi][mi] = ret4[5]
+    data_rec[hi][mi] = ret4[6]
+    data_f1[hi][mi]  = ret4[7]
     hi += 1
 
   # f.close()
@@ -368,43 +378,53 @@ for mon in months:
 print "========================================="
 print "> Time"
 
-train_months = [4,5,6,7,45,456,4567]
-test_months  = [4,5,6,7]
+# train_months = [4,5,6,7,45,456,4567]
+# test_months  = [4,5,6,7]
+train_months = [201504,201505,201506,201507,201604,201605,545,5456,54567,5456764,54567645]
+test_months  = [201504,201505,201506,201507,201604,201605]
+time_types   = ["norm.fix", "norm.fix.fltr"]
 
-for train_mon in train_months:
-  filename = "%s%s.time.%d.txt" % (output_dir, classifier, train_mon)
+for time_type in time_types:
+  for train_mon in train_months:
+    filename = "%s%s.time.%d.%s.txt" % (output_dir, classifier, train_mon, time_type)
+    f = open(filename, 'w')
+    f.write("##Test_Month\tPrecision\tRecall\tF1-score\n")
+
+    for test_mon in test_months:
+
+      print "train=%d,test=%d,type=%s: All" % (train_mon, test_mon, time_type)
+
+      train_file_prefix = "weka_%d.%s" % (train_mon, time_type)
+      test_file_prefix = "weka_%d.%s" % (test_mon, time_type)
+      ret1 = get_results("%s%s.%s.bal200.%s.result.txt" % (input_dir, classifier, train_file_prefix, test_file_prefix))
+      print ret1
+      f.write("%d\t%f\t%f\t%f\n" % (test_mon, ret1[5], ret1[6], ret1[7]))
+
+    f.close()
+
+## train for the next month
+# train_months = [4,4,5,6]
+# test_months  = [4,5,6,7]
+train_months = [201504,201504,201505,201506,201507,201604]
+test_months  = [201504,201505,201506,201507,201604,201605]
+
+for time_type in time_types:
+
+  filename = "%s%s.time.next.%s.txt" % (output_dir, classifier, time_type)
   f = open(filename, 'w')
   f.write("##Test_Month\tPrecision\tRecall\tF1-score\n")
 
-  for test_mon in test_months:
-    print "train=%d,test=%d: All" % (train_mon, test_mon)
+  for i in xrange(len(train_months)):
+    train_mon = train_months[i]
+    test_mon  = test_months[i]
 
-    train_file_prefix = "weka_%d.norm.fix.fltr" % (train_mon)
-    test_file_prefix = "weka_%d.norm.fix.fltr" % (test_mon)
+    print "train=%d,test=%d,type=%s: All" % (train_mon, test_mon, time_type)
+
+    train_file_prefix = "weka_%d.%s" % (train_mon, time_type)
+    test_file_prefix = "weka_%d.%s" % (test_mon, time_type)
     ret1 = get_results("%s%s.%s.bal200.%s.result.txt" % (input_dir, classifier, train_file_prefix, test_file_prefix))
     print ret1
-    f.write("%d\t%f\t%f\t%f\n" % (test_mon, ret1[4], ret1[5], ret1[6]))
+    f.write("%d\t%f\t%f\t%f\n" % (test_mon, ret1[5], ret1[6], ret1[7]))
 
   f.close()
-
-## train for the next month
-train_months = [4,4,5,6]
-test_months  = [4,5,6,7]
-
-filename = "%s%s.time.next.txt" % (output_dir, classifier)
-f = open(filename, 'w')
-f.write("##Test_Month\tPrecision\tRecall\tF1-score\n")
-
-for i in xrange(len(train_months)):
-  train_mon = train_months[i]
-  test_mon  = test_months[i]
-  print "train=%d,test=%d: All" % (train_mon, test_mon)
-
-  train_file_prefix = "weka_%d.norm.fix.fltr" % (train_mon)
-  test_file_prefix = "weka_%d.norm.fix.fltr" % (test_mon)
-  ret1 = get_results("%s%s.%s.bal200.%s.result.txt" % (input_dir, classifier, train_file_prefix, test_file_prefix))
-  print ret1
-  f.write("%d\t%f\t%f\t%f\n" % (test_mon, ret1[4], ret1[5], ret1[6]))
-
-f.close()
 
