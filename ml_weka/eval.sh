@@ -12,9 +12,9 @@ OPTIND=1         # Reset in case getopts has been used previously in the shell.
 ## Inputs
 echo "Inputs"
 
-DATA_PATH="../../data/sensor"
-MODEL_PATH="../../data/model"
-PRED_PATH="../../data/ml_weka"
+DATA_PATH="/u/yichao/iParking/data/sensor"
+MODEL_PATH="/u/yichao/iParking/data/model"
+PRED_PATH="/u/yichao/iParking/data/ml_weka"
 
 CLASSIFIER="NaiveBayes"
 TRAIN_MON="201604"
@@ -113,22 +113,50 @@ elif [[ ${CLASSIFIER} == "LIBSVM" ]]; then
 fi
 
 ## Train/Test output name
-TRAIN_FILE2=${TRAIN_FILE}
-TEST_FILE2=${TEST_FILE}
+# TRAIN_FILE2=${TRAIN_FILE}
+# TEST_FILE2=${TEST_FILE}
+# OUTPUT_FILE=${CLASSIFIER}.${TRAIN_FILE}.${TEST_FILE}
+# MODEL_FILE=${CLASSIFIER}.${TRAIN_FILE}
+# if [[ ${WEKA_SEARCH} != "" ]]; then
+#     TRAIN_FILE2=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+#     TEST_FILE2=${CLASSIFIER}.${TEST_FILE}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+#     OUTPUT_FILE=${CLASSIFIER}.${TRAIN_FILE}.${TEST_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+#     MODEL_FILE=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+
+#     if [[ ${TEST_TYPE} == "" ]]; then
+#         TEST_TYPE2=${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+#     else
+#         TEST_TYPE2=${TEST_TYPE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+#     fi
+# fi
 OUTPUT_FILE=${CLASSIFIER}.${TRAIN_FILE}.${TEST_FILE}
-MODEL_FILE=${CLASSIFIER}.${TRAIN_FILE}
+TRAIN_FILE2_ORIG=${TRAIN_FILE}
+TEST_FILE2_ORIG=${TEST_FILE}
+MODEL_FILE_ORIG=${CLASSIFIER}.${TRAIN_FILE}
 if [[ ${WEKA_SEARCH} != "" ]]; then
-    TRAIN_FILE2=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
-    TEST_FILE2=${CLASSIFIER}.${TEST_FILE}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
     OUTPUT_FILE=${CLASSIFIER}.${TRAIN_FILE}.${TEST_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
-    MODEL_FILE=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
 
     if [[ ${TEST_TYPE} == "" ]]; then
         TEST_TYPE2=${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
     else
         TEST_TYPE2=${TEST_TYPE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
     fi
+
+    TRAIN_FILE2_ORIG=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+    TEST_FILE2_ORIG=${CLASSIFIER}.${TEST_FILE}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
+    MODEL_FILE_ORIG=${CLASSIFIER}.${TRAIN_FILE}.${WEKA_SEARCH}_${WEKA_EVAL}_N${N}_D${D}
 fi
+
+TRAIN_FILE2=$(LC_ALL=C; cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 32;)
+TEST_FILE2=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 32;)
+MODEL_FILE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 32;)
+
+if [ -f ${PRED_PATH}/${OUTPUT_FILE}.result.txt ]; then
+  echo "${PRED_PATH}/${OUTPUT_FILE}.result.txt exists"
+  exit
+fi
+
+
 
 echo "  (-E) weka evaluator: " ${WEKA_EVAL}
 echo "  (-S) weka search: " ${WEKA_SEARCH}
@@ -148,55 +176,66 @@ echo "  test complete: " ${TEST_FILE2}
 
 ## Feature Selection
 echo "Feature Selection"
-# if [[ ${WEKA_SEARCH} != "" ]] && [ ! -f ${DATA_PATH}/${TRAIN_FILE2}.arff ]; then
-if [[ ${WEKA_SEARCH} != "" ]] && ([ ! -f ${DATA_PATH}/${TRAIN_FILE2}.arff ] || [ ! -f ${DATA_PATH}/${TEST_FILE2}.arff ]); then
+# if [[ ${WEKA_SEARCH} != "" ]] && ([ ! -f ${DATA_PATH}/${TRAIN_FILE2}.arff ] || [ ! -f ${DATA_PATH}/${TEST_FILE2}.arff ]); then
+if [[ ${WEKA_SEARCH} == "" ]]; then
+  cp ${DATA_PATH}/${TRAIN_FILE}.arff.gz ${DATA_PATH}/${TRAIN_FILE2}.arff.gz
+  cp ${DATA_PATH}/${TEST_FILE}.arff.gz ${DATA_PATH}/${TEST_FILE2}.arff.gz
 
+else
   ## Wrapper Evaluator
   if [[ ${WEKA_EVAL} == "WrapperSubsetEval" ]]; then
     java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/wekafiles/packages/fastCorrBasedFS/fastCorrBasedFS.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar weka.filters.supervised.attribute.AttributeSelection \
         -E "weka.attributeSelection.${WEKA_EVAL} -B ${WEKA_CLS_WRAP}" \
         -S "weka.attributeSelection.${WEKA_SEARCH} -D ${D} -N ${N}" \
-        -i ${DATA_PATH}/${TRAIN_FILE}.arff \
+        -i ${DATA_PATH}/${TRAIN_FILE}.arff.gz \
         -o ${DATA_PATH}/${TRAIN_FILE2}.arff \
         -c last \
         -b \
-        -r ${DATA_PATH}/${TEST_FILE}.arff \
-        -s ${DATA_PATH}/${TEST_FILE2}.arff \
+        -r ${DATA_PATH}/${TEST_FILE}.arff.gz \
+        -s ${DATA_PATH}/${TEST_FILE2}.arff
+    gzip ${DATA_PATH}/${TRAIN_FILE2}.arff
+    gzip ${DATA_PATH}/${TEST_FILE2}.arff
 
   ## RankSearch Searcher
   elif [[ ${WEKA_SEARCH} == "RankSearch" ]]; then
     java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/wekafiles/packages/fastCorrBasedFS/fastCorrBasedFS.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar weka.filters.supervised.attribute.AttributeSelection \
         -E "weka.attributeSelection.${WEKA_EVAL} -M" \
         -S "weka.attributeSelection.${WEKA_SEARCH} -A weka.attributeSelection.GainRatioAttributeEval -- -M" \
-        -i ${DATA_PATH}/${TRAIN_FILE}.arff \
+        -i ${DATA_PATH}/${TRAIN_FILE}.arff.gz \
         -o ${DATA_PATH}/${TRAIN_FILE2}.arff \
         -c last \
         -b \
-        -r ${DATA_PATH}/${TEST_FILE}.arff \
+        -r ${DATA_PATH}/${TEST_FILE}.arff.gz \
         -s ${DATA_PATH}/${TEST_FILE2}.arff
+    gzip ${DATA_PATH}/${TRAIN_FILE2}.arff
+    gzip ${DATA_PATH}/${TEST_FILE2}.arff
 
   ## Ranker Searcher
   elif [[ ${WEKA_SEARCH} == "Ranker" ]]; then
     java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/wekafiles/packages/fastCorrBasedFS/fastCorrBasedFS.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar weka.filters.supervised.attribute.AttributeSelection \
         -E "weka.attributeSelection.${WEKA_EVAL} -M" \
         -S "weka.attributeSelection.${WEKA_SEARCH} -N ${N}" \
-        -i ${DATA_PATH}/${TRAIN_FILE}.arff \
+        -i ${DATA_PATH}/${TRAIN_FILE}.arff.gz \
         -o ${DATA_PATH}/${TRAIN_FILE2}.arff \
         -c last \
         -b \
-        -r ${DATA_PATH}/${TEST_FILE}.arff \
+        -r ${DATA_PATH}/${TEST_FILE}.arff.gz \
         -s ${DATA_PATH}/${TEST_FILE2}.arff
+    gzip ${DATA_PATH}/${TRAIN_FILE2}.arff
+    gzip ${DATA_PATH}/${TEST_FILE2}.arff
 
   else
     java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/wekafiles/packages/fastCorrBasedFS/fastCorrBasedFS.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar weka.filters.supervised.attribute.AttributeSelection \
         -E "weka.attributeSelection.${WEKA_EVAL} -M" \
         -S "weka.attributeSelection.${WEKA_SEARCH} -D ${D} -N ${N}" \
-        -i ${DATA_PATH}/${TRAIN_FILE}.arff \
+        -i ${DATA_PATH}/${TRAIN_FILE}.arff.gz \
         -o ${DATA_PATH}/${TRAIN_FILE2}.arff \
         -c last \
         -b \
-        -r ${DATA_PATH}/${TEST_FILE}.arff \
+        -r ${DATA_PATH}/${TEST_FILE}.arff.gz \
         -s ${DATA_PATH}/${TEST_FILE2}.arff
+    gzip ${DATA_PATH}/${TRAIN_FILE2}.arff
+    gzip ${DATA_PATH}/${TEST_FILE2}.arff
   fi
 fi
 
@@ -204,14 +243,17 @@ fi
 ## Training
 echo "Training: -t ${DATA_PATH}/${TRAIN_FILE2}.arff -d ${MODEL_PATH}/${MODEL_FILE}.model"
 if [ ! -f ${MODEL_PATH}/${MODEL_FILE}.model ]; then
-  java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar ${WEKA_CLS_TRAIN} -t ${DATA_PATH}/${TRAIN_FILE2}.arff -d ${MODEL_PATH}/${MODEL_FILE}.model -no-cv -o
+  java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar ${WEKA_CLS_TRAIN} -t ${DATA_PATH}/${TRAIN_FILE2}.arff.gz -d ${MODEL_PATH}/${MODEL_FILE}.model -no-cv -o
 fi
 
 
 ## Testing
 echo "Testing: -l ${MODEL_PATH}/${MODEL_FILE}.model -T ${DATA_PATH}/${TEST_FILE2}.arff > ${PRED_PATH}/${OUTPUT_FILE}.pred.csv"
-java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar ${WEKA_CLS_TEST} -l ${MODEL_PATH}/${MODEL_FILE}.model -T ${DATA_PATH}/${TEST_FILE2}.arff -classifications "weka.classifiers.evaluation.output.prediction.CSV" > ${PRED_PATH}/${OUTPUT_FILE}.pred.csv
+java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/LibSVM.jar ${WEKA_CLS_TEST} -l ${MODEL_PATH}/${MODEL_FILE}.model -T ${DATA_PATH}/${TEST_FILE2}.arff.gz -classifications "weka.classifiers.evaluation.output.prediction.CSV" > ${PRED_PATH}/${OUTPUT_FILE}.pred.csv
 
+/bin/rm -f ${DATA_PATH}/${TRAIN_FILE2}.arff.gz
+/bin/rm -f ${DATA_PATH}/${TEST_FILE2}.arff.gz
+/bin/rm -f ${MODEL_PATH}/${MODEL_FILE}.model
 
 ## Evaluation
 # echo "Evaluation: ${OUTPUT_FILE} ${DET_RNG}"

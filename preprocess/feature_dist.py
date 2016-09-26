@@ -11,6 +11,7 @@
 ## - Example
 ##   python feature_dist.py "" norm.fix 1
 ##   python feature_dist.py lora_ norm.fix.valid 1
+##   python feature_dist.py light_ norm.fix.valid 1
 ##
 ######################################
 
@@ -20,7 +21,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.mlab   as mlab
 import matplotlib.pyplot as plt
-
+from subprocess import call
 from os import listdir
 # import list_data
 
@@ -54,6 +55,15 @@ def get_labels_features(filename):
   labels   = []
   features = []
 
+  ## check if arff is compressed
+  is_compressed = 0
+  if not os.path.isfile(filename):
+    is_compressed = 1
+  if is_compressed:
+    print "  gunzip file"
+    call(["gunzip", "%s.gz" % (filename)])
+
+
   f = open(filename, 'r')
   for line in f:
     line = line.strip()
@@ -80,6 +90,12 @@ def get_labels_features(filename):
       if m is not None:
         start = 1
         continue
+
+  ## compress as it is
+  if is_compressed:
+    print "  gzip file"
+    call(["gzip", filename])
+
 
   return [labels, features]
 
@@ -218,7 +234,7 @@ if DEBUG2:
 
 
 if sensor == "":
-  months = [201504, 201505, 201506, 201507, 201604, 201605]
+  months = [201504, 201505, 201506, 201507, 201508, 201509, 201510, 201511, 201512, 201601, 201604, 201605, 201608]
 else:
   months = [201604, 201605]
 

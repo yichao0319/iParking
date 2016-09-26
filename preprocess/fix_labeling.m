@@ -35,7 +35,7 @@ function fix_labeling
     fix_rng  = 7;
     fix_base = 7;  %% feature idx used for fixing
 
-    mons = [201504:201507 201604 201605];
+    mons = [201504:201512 201601 201604 201605 201608];
     % mons = [201604 201605];
     sensors = {'data', 'lora', 'light'};
     % mons = [4];

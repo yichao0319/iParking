@@ -11,22 +11,19 @@ rm tmp.${func}.dag*
 echo "" > tmp.${func}.dag
 
 
-TYPES=("norm.fix" "fix" "fix.fltr" "norm.fix.fltr")
-# MONTHS=(4567 4 5 6 7 45 456 201605)
-# DUPS=(200 0 100 150)
-# FEATURES=(10 30 50)
-MONTHS=(54567645 201504 201505 201506 201507 201604 201605 545 5456 54567 5456764)
+TYPES=("norm.fix" "fix")
+MONTHS=(201504 201505 201506 201507 201508 201509 201510 201511 201512 201601 201604 201605 201608 54-5 54-6 54-7 54-8 54-9)
 DUPS=(200 0 100)
-FEATURES=(10 30 50)
+## 108 * 10%, 20%, 40%, 80%
+FEATURES=(11 22 43 86)
 RNG=100
-# CLASSIFIER="NaiveBayes"
-# CLASSIFIER="C45"
-# CLASSIFIER="SVM"
 # CLASSIFIERS=("NaiveBayes" "C45" "SVM")
+CLASSIFIERS=("C45" "NaiveBayes")
 # CLASSIFIERS=("NaiveBayes")
 # CLASSIFIERS=("C45")
 # CLASSIFIERS=("SVM")
-CLASSIFIERS=("LIBSVM")
+# CLASSIFIERS=("LIBSVM")
+
 SENSOR=""
 VALID=""
 if [[ ${SENSOR} != "" ]]; then
@@ -93,8 +90,6 @@ for (( nci = 0; nci < ${NC}; nci++ )); do
     # bash eval.sh -C=\"${CLASSIFIER}\" -E="WrapperSubsetEval" -S="BestFirst" -t="${FILENAME}${BAL}" -T="${FILENAME}" -r=${RNG} -N=30
     ###########
 
-
-
     #######################################################
     ## Varying Duplications
     echo "================================"
@@ -107,7 +102,7 @@ for (( nci = 0; nci < ${NC}; nci++ )); do
     FILENAME="weka_${SENSOR}${MONTHS[${i}]}.${TYPES[${t}]}"
     echo "FILE=${FILENAME}"
 
-    for (( j = 1; j < ${ND}; j++ )); do
+    for (( j = 0; j < ${ND}; j++ )); do
         BAL=""
         if [[ ${DUPS[${j}]} > 0 ]]; then
             BAL=".bal${DUPS[${j}]}"
@@ -130,7 +125,7 @@ for (( nci = 0; nci < ${NC}; nci++ )); do
     j=0 ## DUPS
     t=0 ## TYPES
 
-    for (( t = 1; t < ${NT}; t++ )); do
+    for (( t = 0; t < ${NT}; t++ )); do
         FILENAME="weka_${SENSOR}${MONTHS[${i}]}.${TYPES[${t}]}"
         echo "FILE=${FILENAME}"
 
@@ -155,9 +150,9 @@ for (( nci = 0; nci < ${NC}; nci++ )); do
 
     # TRAIN_MONTHS=(4 5 6 7 45 456 4567)
     # TEST_MONTHS=(4 5 6 7)
-    TRAIN_MONTHS=(201504 201505 201506 201507 201604 201605 545 5456 54567 5456764 54567645)
-    TEST_MONTHS=(201504 201505 201506 201507 201604 201605)
-    TYPES2=("norm.fix" "norm.fix.fltr")
+    TRAIN_MONTHS=(201504 201505 201506 201507 201508 201509 201510 201511 201512 201601 201604 201605 201608 54-5 54-6 54-7 54-8 54-9)
+    TEST_MONTHS=(201504 201505 201506 201507 201508 201509 201510 201511 201512 201601 201604 201605 201608)
+    TYPES2=("norm.fix")
     NT1=${#TRAIN_MONTHS[@]}
     NT2=${#TEST_MONTHS[@]}
     NT3=${#TYPES2[@]}
@@ -221,5 +216,5 @@ done
 
 
 echo $cnt / $num_jobs
-# condor_submit_dag -maxjobs ${num_jobs} tmp.${func}.dag
-condor_submit_dag tmp.${func}.dag
+condor_submit_dag -maxjobs ${num_jobs} tmp.${func}.dag
+# condor_submit_dag tmp.${func}.dag

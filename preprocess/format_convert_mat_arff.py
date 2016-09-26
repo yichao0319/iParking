@@ -15,7 +15,7 @@
 
 
 import os, sys, math, random, re
-# import list_data
+from subprocess import call
 
 input_dir = "../../data/sensor/"
 output_dir = "../../data/sensor/"
@@ -124,3 +124,4 @@ for ri in xrange(0, len(features)):
 
 f_arff.close()
 
+call(["gzip", filename_arff])

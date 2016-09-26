@@ -9,7 +9,9 @@ echo "Clean up old data"
 dir="../../data"
 
 /bin/rm -f $dir/sensor/*arff
+/bin/rm -f $dir/sensor/*arff.gz
 /bin/rm -f $dir/sensor/*txt
+/bin/rm -f $dir/sensor/*txt.gz
 /bin/rm -f $dir/model/*
 /bin/rm -f $dir/ml_weka/*
 /bin/rm -f $dir/ml_weka/err/*
@@ -24,7 +26,7 @@ dir="../../data"
 #########################################
 dir="../../data/sensor"
 
-MONS=("201504" "201505" "201506" "201507" "201604" "201605")
+MONS=("201504" "201505" "201506" "201507" "201508"  "201509" "201510" "201511" "201512" "201601" "201604" "201605" "201608")
 # MONS=("201604" "201605")
 N=${#MONS[@]}
 
