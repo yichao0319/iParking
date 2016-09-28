@@ -3,7 +3,7 @@
 ## CONDOR
 func="batch_weka_eval"
 
-num_jobs=200
+num_jobs=50
 cnt=0
 
 ## DAG
@@ -12,8 +12,8 @@ echo "" > tmp.${func}.dag
 
 
 TYPES=("norm.fix")
-# SCORES=("combine" "stable")
-SCORES=("s1.combine" "s1.stable" "s2.combine" "s2.stable" "s3.combine" "s3.stable" "s4.combine" "s4.stable")
+# SCORES=("s1.combine" "s1.stable" "s2.combine" "s2.stable" "s3.combine" "s3.stable" "s4.combine" "s4.stable")
+SCORES=("s1.stable" "s2.stable" "s3.stable" "s4.stable")
 MONTHS=(201504 201505 201506 201507 201508 201509 201510 201511 201512 201601 201604 201605 201608)
 DUPS=(200 0)
 FEATURES=(11 22 43 86 108)
@@ -22,7 +22,7 @@ RNG=100
 # CLASSIFIER="C45"
 # CLASSIFIER="SVM"
 # CLASSIFIERS=("NaiveBayes" "C45" "SVM")
-CLASSIFIERS=("NaiveBayes" "C45")
+CLASSIFIERS=("C45" "NaiveBayes")
 # CLASSIFIERS=("NaiveBayes")
 # CLASSIFIERS=("C45")
 # CLASSIFIERS=("SVM")

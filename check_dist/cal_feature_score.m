@@ -5,7 +5,7 @@
 %%  - nf: number of features
 %%
 %% example:
-%%  cal_feature_score(201504, 201505, 'norm.fix', '', 108)
+%%  cal_feature_score(201506, 201508, 'norm.fix', '', 108)
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -155,7 +155,10 @@ function [ks, score] = cal_feature_score(mon1, mon2, type, sensor, nf, PLOT)
     % score(idx) = ks_mon1(idx) ./ ks(idx) + ks_mon2(idx) ./ ks(idx);
     for si = 1:size(score,2)
         [score_sorted, score_idx] = sort(score(:,si), 'ascend');
-        dlmwrite(sprintf('%s%d.%d.%s.%s.s%d.stable.txt', output_dir, mon1, mon2, sensor, type, si), [score_sorted, score_idx], 'delimiter', '\t');
+        % [score_sorted, score_idx]
+        % fprintf('  si=%d, size score=%dx%d, idx=%dx%d\n', si, size(score_sorted), size(score_idx));
+        % fprintf('%s%d.%d.%s.%s.s%d.stable.txt\n', output_dir, mon1, mon2, sensor, type, si);
+        dlmwrite(sprintf('%s%d.%d.%s.%s.s%d.stable.txt', output_dir, mon1, mon2, sensor, type, si), [score_idx, score_sorted], 'delimiter', '\t');
 
 
         score_comb = (score_mon1(:,si) + score_mon2(:,si)) ./ (score(:,si)+0.1);

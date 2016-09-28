@@ -91,6 +91,12 @@ MODEL_FILE=$(LC_ALL=C; cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 32;)
 
 OUTPUT_FILE="${CLASSIFIER}.weka_${SENSOR}${TRAIN_MON}.train${TEST_MON}.${TYPE}.${SCORE}.nf${N}.dup${DUP}${VALID}"
 
+if [ -f ${PRED_PATH}/${OUTPUT_FILE}.result.txt ]; then
+  echo "${PRED_PATH}/${OUTPUT_FILE}.result.txt exists"
+  exit
+fi
+
+
 echo "  (-C) classifier: " ${CLASSIFIER}
 echo "  (-N) weka num features: " ${N}
 echo "  (-m) train month: " ${TRAIN_MON}
@@ -121,6 +127,7 @@ java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/Li
 
 
 ## Remove file after done
+/bin/rm -f ${MODEL_PATH}/${MODEL_FILE}.model
 /bin/rm -f ${DATA_PATH}/${TRAIN_FILE}.arff.gz
 /bin/rm -f ${DATA_PATH}/${TEST_FILE}.arff.gz
 
@@ -138,4 +145,4 @@ java -classpath ./:/u/yichao/bin/weka-3-8-0/weka.jar:/u/yichao/bin/weka-3-8-0/Li
 echo "Evaluation: ${CLASSIFIER} ${SENSOR} ${TRAIN_MON} ${TEST_MON} ${TYPE} ${SCORE} ${N} ${DUP} ${DET_RNG}"
 python weka_eval_pred.py ${CLASSIFIER} "${SENSOR}" ${TRAIN_MON} ${TEST_MON} ${TYPE} ${SCORE} ${N} ${DUP} ${DET_RNG}
 
-
+gzip -f ${PRED_PATH}/${OUTPUT_FILE}.pred.csv
