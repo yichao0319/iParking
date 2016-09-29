@@ -34,10 +34,12 @@ function plot_dist_space(rerun)
     %% --------------------
     input_dir  = '../../data/check_dist_time_space/mat_space/';
     output_dir = '../../data/check_dist_time_space/';
+    plot_data_dir = '../plot/percom2017/data/feature_dist/';
     fig_dir    = './tmp/';
 
     spots = {'201504.408_103', '201504.410_107', '201504.412_108', '201504.414_114', '201504.416_115', '201504.417_110', '201504.424_109'};
-    features = [13:15, 28:36, 64:69, 73:74, 79:83, 88, 93:94, 106:107];
+    % features = [13:15, 28:36, 64:69, 79:83, 88, 93:94, 106:107];
+    features = [66 79:83];
 
 
     %% --------------------
@@ -111,6 +113,12 @@ function plot_dist_space(rerun)
         end
     end
 
+
+    plot_fig1(xs, pdfs, features, spots, plot_data_dir);
+    % pause;
+    plot_fig2(xs, pdfs, features, spots, plot_data_dir);
+    % pause;
+
     %% --------------------
     %% Plot
     %% --------------------
@@ -134,8 +142,9 @@ function plot_dist_space(rerun)
             set(lh(si), 'LineWidth', mod(si*2, 7)+1);
             hold on;
         end
-
-        print(fh, '-dpng', sprintf('%sspace.f%d.dist.png', fig_dir, fi));
+        legend(spots);
+        % pause
+        % print(fh, '-dpng', sprintf('%sspace.f%d.dist.png', fig_dir, fi));
     end
 
 end
@@ -149,4 +158,60 @@ function [data] = load_gz(filename)
     delete(sprintf('%s.gz', rand_filename));
     data = load(rand_filename);
     delete(rand_filename);
+end
+
+function plot_fig1(xs, pdfs, features, spots, plot_data_dir)
+    sel_f  = 66;
+    sel_ss = {'201504.412_108', '201504.414_114', '201504.417_110', '201504.424_109'};
+
+    fh = figure(1); clf;
+    for mi = 1:length(sel_ss)
+        sel_s = sel_ss{mi};
+        [~,idx_m] = ismember(sel_s, spots);
+
+        ax = xs{idx_m}{sel_f};
+        apdf = pdfs{idx_m}{sel_f};
+
+        apdf = lrpf(apdf, 0.3);
+        plot(ax, apdf, '-o'); hold on;
+
+        dlmwrite(sprintf('%sspace_dist.%s.f%d.txt', plot_data_dir, sel_s, sel_f), [ax, apdf], 'delimiter', '\t');
+    end
+    legend(sel_ss);
+end
+
+function plot_fig2(xs, pdfs, features, spots, plot_data_dir)
+    sel_f  = 79;
+    sel_ss = {'201504.412_108', '201504.414_114', '201504.417_110', '201504.424_109'};
+    % sel_ss = {'201504.408_103', '201504.410_107', '201504.412_108', '201504.414_114', '201504.416_115', '201504.417_110', '201504.424_109'};
+
+    fh = figure(1); clf;
+    for mi = 1:length(sel_ss)
+        sel_s = sel_ss{mi};
+        [~,idx_m] = ismember(sel_s, spots);
+
+        ax = xs{idx_m}{sel_f};
+        apdf = pdfs{idx_m}{sel_f};
+
+        % min_x = min(ax);
+        % max_x = max(ax);
+        % stp = 10;
+        % new_x = min_x:stp:(max_x+stp/2);
+        % new_pdf = [];
+        % for xi = 1:length(new_x)
+        %     if xi == length(new_x)
+        %         idx = find(ax >= new_x(xi));
+        %     else
+        %         idx = find(ax >= new_x(xi) & ax < new_x(xi+1));
+        %     end
+        %     new_pdf(xi) = sum(apdf(idx));
+        % end
+
+        apdf = lrpf(apdf, 0.3);
+        plot(ax, apdf, '-o'); hold on;
+        % apdf = lrpf(new_pdf, 0.3);
+        % plot(new_x, new_pdf, '-o'); hold on;
+        dlmwrite(sprintf('%sspace_dist.%s.f%d.txt', plot_data_dir, sel_s, sel_f), [ax, apdf], 'delimiter', '\t');
+    end
+    legend(sel_ss);
 end

@@ -32,14 +32,16 @@ function plot_dist_time(rerun)
     %% --------------------
     %% Constant
     %% --------------------
-    input_dir  = '../../data/sensor/';
-    output_dir = '../../data/check_dist_time_space/';
-    fig_dir    = './tmp/';
+    input_dir     = '../../data/sensor/';
+    output_dir    = '../../data/check_dist_time_space/';
+    plot_data_dir = '../plot/percom2017/data/feature_dist/';
+    fig_dir       = './tmp/';
 
     months = {'201504', '201505', '201506', '201507', '201508', '201509', '201510', '201511', '201512', '201601', '201604', '201605', '201608'};
     % months = {'201504', '201505'};
     % months = {'201608'};
-    features = [13:15, 28:36, 64:69, 73:74, 79:83, 88, 93:94, 106:107];
+    features = [28:30, 64:66, 93, 106];
+    % features = 1:108;
 
 
     %% --------------------
@@ -114,6 +116,13 @@ function plot_dist_time(rerun)
         end
     end
 
+    plot_fig1(xs, pdfs, features, months, plot_data_dir);
+    % pause
+    plot_fig2(xs, pdfs, features, months, plot_data_dir);
+    % pause
+    plot_fig3(xs, pdfs, features, months, plot_data_dir);
+    % pause
+
     %% --------------------
     %% Plot
     %% --------------------
@@ -128,16 +137,20 @@ function plot_dist_time(rerun)
         fh = figure(1); clf;
 
         lh = [];
+        legends = {};
         for mi = 1:length(months)
             % lh(mi) = plot(xs{mi}{fi}, cdfs{mi}{fi}, '-b.');
             lh(mi) = plot(xs{mi}{fi}, pdfs{mi}{fi}, '-b.');
             set(lh(mi), 'Color', colors{mod(mi-1,length(colors))+1});
             set(lh(mi), 'LineStyle', char(lines{mod(mi-1,length(lines))+1}));
             set(lh(mi), 'LineWidth', mod(mi*2, 7)+1);
+            legends{mi} = months{mi};
             hold on;
         end
+        legend(lh, legends, 'Location', 'Best');
 
-        print(fh, '-dpng', sprintf('%sf%d.dist.png', fig_dir, fi));
+        % print(fh, '-dpng', sprintf('%sf%d.dist.png', fig_dir, fi));
+        % pause
     end
 
 end
@@ -151,4 +164,66 @@ function [data] = load_gz(filename)
     delete(sprintf('%s.gz', rand_filename));
     data = load(rand_filename);
     delete(rand_filename);
+end
+
+
+function plot_fig1(xs, pdfs, features, months, plot_data_dir)
+    sel_f  = 28;
+    sel_ms = {'201504', '201512', '201601', '201608'};
+
+    fh = figure(1); clf;
+    for mi = 1:length(sel_ms)
+        sel_m = sel_ms{mi};
+        [~,idx_m] = ismember(sel_m, months);
+
+        ax = xs{idx_m}{sel_f};
+        apdf = pdfs{idx_m}{sel_f};
+
+        apdf = lrpf(apdf, 0.3);
+        plot(ax, apdf, '-o'); hold on;
+
+        dlmwrite(sprintf('%stime_dist.%s.f%d.txt', plot_data_dir, sel_m, sel_f), [ax, apdf], 'delimiter', '\t');
+    end
+    legend(sel_ms);
+
+end
+
+function plot_fig2(xs, pdfs, features, months, plot_data_dir)
+    sel_f  = 64;
+    sel_ms = {'201504', '201512', '201601', '201608'};
+
+    fh = figure(1); clf;
+    for mi = 1:length(sel_ms)
+        sel_m = sel_ms{mi};
+        [~,idx_m] = ismember(sel_m, months);
+
+        ax = xs{idx_m}{sel_f};
+        apdf = pdfs{idx_m}{sel_f};
+
+        apdf = lrpf(apdf, 0.3);
+        plot(ax, apdf, '-o'); hold on;
+
+        dlmwrite(sprintf('%stime_dist.%s.f%d.txt', plot_data_dir, sel_m, sel_f), [ax, apdf], 'delimiter', '\t');
+    end
+    legend(sel_ms);
+end
+
+function plot_fig3(xs, pdfs, features, months, plot_data_dir)
+    sel_f  = 93;
+    sel_ms = {'201504', '201512', '201601', '201608'};
+
+    fh = figure(1); clf;
+    for mi = 1:length(sel_ms)
+        sel_m = sel_ms{mi};
+        [~,idx_m] = ismember(sel_m, months);
+
+        ax = xs{idx_m}{sel_f};
+        apdf = pdfs{idx_m}{sel_f};
+
+        apdf = lrpf(apdf, 0.3);
+        plot(ax, apdf, '-o'); hold on;
+
+        dlmwrite(sprintf('%stime_dist.%s.f%d.txt', plot_data_dir, sel_m, sel_f), [ax, apdf], 'delimiter', '\t');
+    end
+    legend(sel_ms);
 end
