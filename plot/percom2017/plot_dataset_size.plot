@@ -3,43 +3,39 @@ set terminal postscript eps enhanced color 28
 # set terminal postscript eps enhanced monochrome 28
 # set terminal png enhanced 28 size 800,600
 # set terminal jpeg enhanced font helvetica 28
-set size ratio 0.7
+set size ratio 1.5
 
-data_dir = "./data/"
+data_dir = "./data/train_size/"
 fig_dir  = "./figs/"
-file_name = "dataset_size"
-fig_name  = "dataset_size"
-set output fig_dir.fig_name.".eps"
 
-# set xlabel '{/Helvetica=28 X_LABEL}'
-# set ylabel '{/Helvetica=28 Precision}'
+set xlabel '{/Helvetica=28 Training Size (Months)}' offset character 0, 0, 0
 
 set xtics nomirror rotate by 0
 set ytics nomirror
 set tics font "Helvetica,28"
 
-set xrange [-0.5:2.5]
+set xrange [-0.5:5.5]
 set yrange [0:1]
 
 set style data histogram
 set style histogram cluster gap 1
 set style fill solid border -1
-set boxwidth 0.9
+set boxwidth 1.8
 
 set style fill pattern 2
 # set style fill solid 0.8
 set palette color
 # set palette gray
 
-# set lmargin 4.5
-# set rmargin 5.5
-# set bmargin 3.7
-# set tmargin 4.4
+set lmargin 1
+set rmargin 1
+set bmargin 3.3
+set tmargin 1
 
 # set key right top
 # set key at 10,5  ## coordinate of right top corner of the legend
-set key Left above reverse horizontal spacing 0.9 samplen 1.5 width 1
-# set nokey
+# set key Left above reverse horizontal spacing 0.9 samplen 1.5 width 1
+set nokey
 
 
 # set style line 1 lc rgb "red"     lt 1 lw 1 pt 1 ps 1.5 pi -1  ## +
@@ -62,11 +58,29 @@ set style line 8 lc rgb "#f781bf" lt 1 lw 5 pt 8 ps 1.5 pi -1  ## triangle
 set style line 9 lc rgb "#999999" lt 1 lw 5 pt 9 ps 1.5 pi -1  ##
 
 
+classifier = "NaiveBayes"
+file_name = classifier.".dataset_size"
 
-plot data_dir.file_name.".txt" \
-        using 2:xtic(1) t '{/Helvetica=28 1 month}' fs pattern 2 ls 1, \
-     '' using 3 t '{/Helvetica=28 2 months}' fs pattern 3 ls 2, \
-     '' using 4 t '{/Helvetica=28 3 months}' fs pattern 4 ls 3, \
-     '' using 5 t '{/Helvetica=28 4 months}' fs pattern 5 ls 4, \
-     '' using 6 t '{/Helvetica=28 5 months}' fs pattern 6 ls 5
+###############################################################
+fig_name  = classifier."_dataset_size_prec"
+set output fig_dir.fig_name.".eps"
+set ylabel '{/Helvetica=28 Precision}' offset character 2, 0, 0
+
+plot data_dir.file_name.".txt" using 2:xtic(1) fs pattern 3 ls 2
+
+
+###############################################################
+fig_name  = classifier."_dataset_size_recall"
+set output fig_dir.fig_name.".eps"
+set ylabel '{/Helvetica=28 Recall}'
+
+plot data_dir.file_name.".txt" using 3:xtic(1) fs pattern 4 ls 3
+
+
+###############################################################
+fig_name  = classifier."_dataset_size_f1"
+set output fig_dir.fig_name.".eps"
+set ylabel '{/Helvetica=28 F1-Score}'
+
+plot data_dir.file_name.".txt" using 4:xtic(1) fs pattern 2 ls 1
 
