@@ -1,0 +1,101 @@
+=======================================
+Yi-Chao Chen @ UT Austin
+=======================================
+
+## ===========================
+## Data Placement
+## ===========================
+- iParking
+  |- data
+  |   |- sensor: [Input] data_*.txt and label_*.txt
+  |   |          [Output] Preprocessed data
+  |   |
+  |   |- model: [Output] learned models
+  |   |- ml_weka: [Output] prediction and results
+  |   |   |- err: [Output] Plot FN/FP cases
+  |   |   |- prob: [Output] Confidence of True/False/FP/FN cases
+  |   |   |- summary: [Output] Summarized results (to plot figures in paper)
+  |   |
+  |   |- feature_dist: [Output] feature distribution across months
+  |   |- condor: [Output] cluster results
+  |   |- check_dist
+  |       |- condor: [Output] cluster running logs
+  |       |- feature_score: [Output] the estimated scores for each feature
+  |       |- weka_data: [Output] used to store tmp arff files
+  |       |- weka_model: [Output] learned models
+  |       |- weka_pred: [Output] prediction and results
+  |
+  |- git_repository: download from git repository
+
+
+## ===========================
+## Preprocessing
+## ===========================
+
+Step 1. setup_files.sh
+  Cleanup old files, setup proper directory, and copy data/labels to iParking/data/sensor/
+
+Step 2. batch_format_convert_libsvm_mat.sh
+  Convert libsvm format data to csv format (with both original and normalized feature data)
+
+Step 3. fix_labeling.m
+  a) merge nearby positive events (because they may belong to one but spam longer samples)
+  b) normalize features
+  c) remove invalid samples in Lora and Light sensors
+
+Step 4. batch_format_convert_mat_arff.sh
+  Convert csv format to ARFF (for Weka) format.
+
+Step 5. batch_feature_dist.sh
+  Calculate the distribution of each feature across months. The output can be used in "check_dist/cal_ks_value.m" to identify stable features or similarity among months; it can also be used to manually get rid of features which change a lot over months.
+
+Step 6. weka_filter_resample.sh
+  Performs the following tasks:
+  a) Remove or keep bad features found in "Step 2"
+  b) Attach data from different months
+  c) Balance positive and negative samples by calling weka's resampling function
+
+
+## ===========================
+## Classification -- Weka
+## ===========================
+
+Step 1 (a) batch_eval_condor.sh
+  Run classifiers with various feature selectors/parameters on UT Austin CONDOR
+
+Step 1 (b) batch_eval_sensors_condor.sh
+  Run classifiers with various feature selectors/parameters on UT Austin CONDOR for Lora and Light data
+
+Step 2 (a). summarize_results.py
+  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1 (a)" results
+
+Step 2 (b). summarize_sensors_results.py
+  Summarize and compare classifieres/Feature Selectors/Parameters from "Step 1 (b)" results
+
+#Step 3. visualize_err.py
+#  Plot FP/FN cases from "Step 1" results
+
+
+
+## ===========================
+## Feature Distribution
+## ===========================
+
+Step 1. batch_cal_feature_score.m
+  Calculate feature score by checking the feature distribution across i) stability: two months, and ii) distinct(mon_i): the positive and negative events. We use statistics methods, including KS, KW, and Hollinger test, to see if two distribution are the same.
+  A score of a feature is defined as:
+    stable-score  = stability
+    combine-score = (distinct(mon1) + distinct(mon2)) ./ test_value
+
+Step 2. batch_weka_eval_condor.sh
+  Use one month for training and other months for testing under various number of top-N-scored features.
+
+
+## ===========================
+## Too huge to train --> sampling
+## ===========================
+
+
+
+
+
