@@ -1,0 +1,24 @@
+Inputs
+  (-E) weka evaluator:  SymmetricalUncertAttributeSetEval
+  (-S) weka search:  FCBFSearch
+  (-N) weka num features:  30
+  (-D) weka search direction:  1
+  (-t) train:  weka_201504.norm.fix.fltr.bal200
+  (-T) test:  weka_201504.norm.fix.fltr
+  (-r) range:  100
+  train complete:  NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1
+  test complete:  NaiveBayes.weka_201504.norm.fix.fltr.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1
+Feature Selection
+Training: -t /home/hpc/intel_parking/iParking_tmpData/sensor/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.arff -d /home/hpc/intel_parking/iParking/data/model/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.model
+java -classpath /home/hpc/intel_parking/weka-3-8-0/weka.jar:/home/hpc/intel_parking/weka-3-8-0/LibSVM.jar:/home/hpc/intel_parking/weka-3-8-0/libsvm.jar weka.classifiers.bayes.NaiveBayes -K -t /home/hpc/intel_parking/iParking_tmpData/sensor/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.arff -d /home/hpc/intel_parking/iParking/data/model/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.model -h 0 -no-cv
+Testing: -l /home/hpc/intel_parking/iParking/data/model/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.model -T /home/hpc/intel_parking/iParking_tmpData/sensor/NaiveBayes.weka_201504.norm.fix.fltr.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.arff > /home/hpc/intel_parking/iParking/data/ml_weka/NaiveBayes.weka_201504.norm.fix.fltr.bal200.weka_201504.norm.fix.fltr.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.pred.csv
+java -classpath /home/hpc/intel_parking/weka-3-8-0/weka.jar:/home/hpc/intel_parking/weka-3-8-0/LibSVM.jar:/home/hpc/intel_parking/weka-3-8-0/libsvm.jar weka.classifiers.bayes.NaiveBayes -l /home/hpc/intel_parking/iParking/data/model/NaiveBayes.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.model -T /home/hpc/intel_parking/iParking_tmpData/sensor/NaiveBayes.weka_201504.norm.fix.fltr.weka_201504.norm.fix.fltr.bal200.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.arff -classifications weka.classifiers.evaluation.output.prediction.CSV > /home/hpc/intel_parking/iParking/data/ml_weka/NaiveBayes.weka_201504.norm.fix.fltr.bal200.weka_201504.norm.fix.fltr.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.pred.csv 
+Evaluation: NaiveBayes.weka_201504.norm.fix.fltr.bal200.weka_201504.norm.fix.fltr.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1 100
+Get Prediction
+  FILE: /home/hpc/intel_parking/iParking/data/ml_weka/NaiveBayes.weka_201504.norm.fix.fltr.bal200.weka_201504.norm.fix.fltr.FCBFSearch_SymmetricalUncertAttributeSetEval_N30_D1.pred.csv
+Evaluation
+tp=0,tn=0,fp=0,fn=0
+precision=0.00, recall=0.00, f1=0.00
+prob: truth=0.00, false=0.00 (fp=0.00, fn=0.00)
+Confidence Distribution
+Output Results
