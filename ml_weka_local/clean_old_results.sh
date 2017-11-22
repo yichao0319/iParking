@@ -1,0 +1,11 @@
+rm -f ../../data/condor/log/*
+rm -f ../../data/model/*
+rm -f ../../data/ml_weka/*
+rm -f ../../data/ml_weka/err/*
+rm -f ../../data/ml_weka/prob/*
+rm -f ../../data/ml_weka/summary/*
+rm -f ../../data/feature_dist/*
+rm -f ../../data/sensor/*Ranker*
+rm -f ../../data/sensor/*BestFirst*
+rm -f ../../data/sensor/*FCBFSearch*
+rm -f ./tmp*
